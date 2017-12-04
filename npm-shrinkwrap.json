@@ -1,6 +1,6 @@
 {
   "name": "loopback-reset-password-mixin",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "dependencies": {
     "aws-sdk": {
       "version": "2.162.0",
