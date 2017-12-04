@@ -62,7 +62,7 @@ npm install loopback-reset-password-mixin --save
       "methods": {}
     }
     ```
-1. Add the following mixin configuration into the ``common/models/employee.json` file
+1. Add the following mixin configuration into the `common/models/employee.json` file
 
     ```
     "mixins": {
@@ -167,6 +167,12 @@ npm install loopback-reset-password-mixin --save
          },
          ```
 1. Add `"protocol": "http || https",` to the `server/config.json` file
+1. Check if your `config.json` file have `host` and `port` defined. If not, please add them like
+    
+    ```
+        "host": "0.0.0.0",
+        "port": "3000",
+    ```
 1. You will need to setup your SES on AWS for yourself.
 1. Then setup the following SES environment variables in your environment
     * `AWS_ACCESS_KEY_ID=value`
