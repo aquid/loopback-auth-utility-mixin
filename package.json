@@ -1,6 +1,6 @@
 {
   "name": "loopback-reset-password-mixin",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Add reset password functionality to a loopback project.",
   "main": "lib/ResetPassword.js",
   "scripts": {
