@@ -69,7 +69,7 @@ module.exports = function (Model, options) {
 
     Model.on('resetPasswordRequest', function (info) {
         var settings = Model.app.settings;
-        var html = 'click on <a href="'+settings.protocol+'://'+settings.host+':'+settings.port+'/confirm-password-reset?access_token=' + info.accessToken.id + '">this</a> url to reset your password';
+        var html = 'Click on <a href="'+settings.protocol+'://'+settings.host+':'+settings.port+'/confirm-password-reset?access_token=' + info.accessToken.id + '">this</a> url to reset your password';
         transporter.sendMail({
             from: process.env.RESET_PASSWORD_EMAIL,
             to: info.user.email,
