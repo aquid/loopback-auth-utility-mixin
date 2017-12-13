@@ -3,6 +3,7 @@ var path = require('path');
 var aws = require('aws-sdk');
 
 module.exports = function (Model, options) {
+	console.log('Mixin attached to Model');
 	aws.config.region = process.env.AWS_DEFAULT_REGION || 'us-west-2';
 	var transporter = nodemailer.createTransport({
 		SES: new aws.SES({
@@ -11,11 +12,15 @@ module.exports = function (Model, options) {
 	});
 
     Model.on('attached' , function () {
+		console.log('Mixin attached to Model on attached event');
+		console.log('Mixin attached to Model', Model.name);
 
 		/**
          *
 		 */
 		Model.app.get('/request-password-reset', function (request, response, next) {
+			console.log('Reset password called');
+			console.log('__dirname',__dirname);
             response.sendFile(path.join(__dirname + '/views/reset-password.html'));
         });
 
@@ -23,6 +28,8 @@ module.exports = function (Model, options) {
 		 *
 		 */
         Model.app.get('/confirm-password-reset', function (request, response, next) {
+			console.log('Reset password called');
+			console.log('__dirname',__dirname);
             response.sendFile(path.join(__dirname + '/views/confirm-password.html'));
         });
 
