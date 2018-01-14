@@ -2,6 +2,10 @@ var nodemailer = require('nodemailer');
 var path = require('path');
 var aws = require('aws-sdk');
 
+const SendOtp = require('sendotp');
+console.log(process.env.MSG91_AUTH_KEY)
+const sendOtp = new SendOtp(process.env.MSG91_AUTH_KEY)
+
 module.exports = function (Model, options) {
 	aws.config.region = process.env.AWS_DEFAULT_REGION || 'us-west-2';
 	var transporter = nodemailer.createTransport({
@@ -13,12 +17,23 @@ module.exports = function (Model, options) {
     Model.on('attached' , function () {
 
 		/**
-         *
+     *
 		 */
 		Model.app.get('/request-password-reset', function (request, response, next) {
             response.sendFile(path.join(__dirname + '/views/reset-password.html'));
         });
-
+		/**
+     * Server HTML for requesting OTP
+     */
+		Model.app.get('/request-password-reset-phone', function (request, response, next) {
+            response.sendFile(path.join(__dirname + '/views/reset-password-phone.html'));
+        });
+		/**
+     * Server HTML for veryfing OTP
+		 */
+		Model.app.get('/verify-otp', function (request, response, next) {
+            response.sendFile(path.join(__dirname + '/views/verify-otp.html'));
+        });
 		/**
 		 *
 		 */
@@ -27,7 +42,7 @@ module.exports = function (Model, options) {
         });
 
 		/**
-		 *
+     *
 		 */
         Model.app.post('/request-password-reset', function(request, response, next) {
             Model.resetPassword({
@@ -40,6 +55,78 @@ module.exports = function (Model, options) {
                 });
             });
         });
+    /**
+      *  The following route is meant to generate OTP for valid users.
+      */
+        Model.app.post('/request-password-reset-phone', function(request, response, next) {
+            /*
+             * Check whether a user with the provided phone number exits.
+             * Phone numbers which don't correspond to any user are cons-
+             * dered unauthorized.
+             */
+            Model.findOne({ where: {
+                phone: request.body.phone
+            }}, (err, user) => {
+                if(!user)
+                    response.status(401).send({
+                        statusCode:401,
+                        message:'Invalid Phone Number'
+                    });
+                else {
+                    /*
+                     * Generate OTP by accessing the thrid party library.
+                     */ 
+                    sendOtp.send(request.body.phone, "PRIIND", function (error, data, result) {
+                        if(data.type === 'success') {
+                            response.send(true);
+                        }
+                        if(data.type == 'error') {
+                            response.status(504).send({
+                                "message":'OTP generation failed'
+                            });
+                        }
+                    });
+                }
+            });
+        });
+    /**
+      * The following route is meant for OTP verification.
+      */
+         Model.app.post('/verify-otp', function(request, response, next) {
+             let phone = request.body.phone;
+             let otp = request.body.otp;
+             sendOtp.verify(phone, otp, function (error, data, result) {
+                 if(data.type == 'success') {
+                     /*
+                      * Find user corresponding to the verfied phone number
+                      */ 
+                     Model.findOne({ where: {
+                         phone: request.body.phone
+                     }}, (err, user) => {
+                          if(err) {
+                              return response.status(504).send({
+                                         "message":'OTP verification failed'
+                                     });   
+                          }
+                          /* 
+                          * Generate Access Token for users with successful 
+                          * OTP verification. Access Token will be valid 
+                          * for 24 hours.
+                          */
+                         user.createAccessToken(86400, (err, accessToken) => {
+                             response.status(200).send({
+                                 "accessToken": accessToken.id
+                             });
+                         });
+                     });
+                 }
+                 if(data.type == 'error') {
+                     response.status(504).send({
+                         "message":'OTP verification failed'
+                     });
+                 }
+             });
+         });
 
 		/**
 		 *
@@ -50,7 +137,6 @@ module.exports = function (Model, options) {
                     error: 'Incorrect Token',
                     statusCode:404,
                     message:'Valid token not found'});
-
             Model.findById(request.accessToken.userId, function(err, user) {
                 if(err)
                     return response.status(404).send(err);
@@ -64,6 +150,33 @@ module.exports = function (Model, options) {
                     });
                 }
             });
+        });
+		/**
+		 * The following route handles password reset for phone.
+		 */
+        Model.app.post('/confirm-password-reset-phone', function(request, response, next) {
+            /*
+             * Find the token data corresponding to the given 
+             * token.
+             */
+            Model.relations.accessTokens.modelTo.findById(request.query.access_token, (err, token) => {
+                /*
+                 * Fetch user information corresponding to the 
+                 * token.
+                 */
+                Model.findById(token.userId, (err, user) => {
+                    /*
+                     * Finally update the password for the user
+                     */
+                    user.updateAttribute('password',request.body.password, function(err, res){
+                        if (err) return response.status(404).send(err);
+                        return response.status(200).send({
+                            statusCode:200,
+                            message:'password reset processed successfully'
+                        });
+                    });
+                })
+            })
         });
     });
 
