@@ -3,7 +3,6 @@ var path = require('path');
 var aws = require('aws-sdk');
 
 const SendOtp = require('sendotp');
-console.log(process.env.MSG91_AUTH_KEY)
 const sendOtp = new SendOtp(process.env.MSG91_AUTH_KEY)
 
 module.exports = function (Model, options) {
