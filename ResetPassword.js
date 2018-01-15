@@ -161,6 +161,25 @@ module.exports = function (Model, options) {
              */
             Model.relations.accessTokens.modelTo.findById(request.query.access_token, (err, token) => {
                 /*
+                 * Handle scenarios these scenarios:
+                 * 1. Server fails to retreive token data
+                 * 2. Request with invalid token 
+                 */
+                if(err) {
+                    return response.status(503).send({
+                               "statusCode" : 503,
+                               "message":'Service Unavailable'
+                    });   
+                }
+
+                if(!token) {
+                    return response.status(401).send({
+                               "statusCode" : 401,
+                               "message":'Invalid token'
+                    });   
+                }
+
+                /*
                  * Fetch user information corresponding to the 
                  * token.
                  */
@@ -168,6 +187,12 @@ module.exports = function (Model, options) {
                     /*
                      * Finally update the password for the user
                      */
+                    if(err) {
+                        return response.status(504).send({
+                                   "statusCode" : 504,
+                                   "message":'Error fetching in User'
+                        });   
+                    }
                     user.updateAttribute('password',request.body.password, function(err, res){
                         if (err) return response.status(404).send(err);
                         return response.status(200).send({
