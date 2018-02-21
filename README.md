@@ -179,6 +179,8 @@ npm install loopback-reset-password-mixin --save
     * `AWS_SECRET_ACCESS_KEY=value`
     * `AWS_DEFAULT_REGION=value`
     * `RESET_PASSWORD_EMAIL=value (eg: no-reply@xyz.com)`
+    * `VERIFICATION_EMAIL=value (eg: no-reply@xyz.com)`
+    
 1. Start your API server
 1. In a separate terminal, make an API request to create an employee:
 
