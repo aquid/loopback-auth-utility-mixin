@@ -73,7 +73,7 @@ module.exports = function (Model, options) {
 
   Model.on('resetPasswordRequest', function (info) {
     var settings = Model.app.settings;
-    var html = 'Hello <br /><br /> There was recently a request to change the password on your account.<br /><br />If you requested this password change, please click the <a href="\' + settings.protocol + \'://\' + settings.host + \':\' + settings.port + \'/confirm-password-reset?access_token=\' + info.accessToken.id + \'">link</a> to set a new password url to reset your password.<br /><br />If you did not make this request or need assistance pls write to us at support@bnext.in or call our customer support no. +91 992 099 8066<br /><br />Thank you.<br />The Bnext Team';
+    var html = 'Hello <br /><br /> There was recently a request to change the password on your account.<br /><br />If you requested this password change, please click the <a href="' + settings.protocol + '://' + settings.host + ':' + settings.port + '/confirm-password-reset?access_token=' + info.accessToken.id + '">Link</a> to set a new password.<br /><br />If you did not make this request or need assistance please write to us at support@bnext.in or call our customer support no. +91 992 099 8066<br /><br />Thank you.<br />The Bnext Team';
     transporter.sendMail({
       from: process.env.RESET_PASSWORD_EMAIL,
       to: info.user.email,
