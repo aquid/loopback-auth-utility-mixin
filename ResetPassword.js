@@ -34,7 +34,8 @@ module.exports = function (Model, options) {
      */
     Model.app.post('/request-password-reset', function (request, response, next) {
       Model.resetPassword({
-        email: request.body.email
+        email: request.body.email,
+        emailTemplate: request.body.emailTemplate
       }, function (err) {
         if (err) return response.status(401).send(err);
         else return response.status(200).send({
@@ -73,11 +74,17 @@ module.exports = function (Model, options) {
 
   Model.on('resetPasswordRequest', function (info) {
     var settings = Model.app.settings;
-    var html = 'Click on <a href="' + settings.protocol + '://' + settings.host + ':' + settings.port + '/confirm-password-reset?access_token=' + info.accessToken.id + '">this</a> url to reset your password';
+    var html;
+    if(info.options.emailTemplate) {
+      html = info.options.emailTemplate.replace('%s', info.accessToken.id);
+    }
+    else {
+      html = 'Click on <a href="' + settings.protocol + '://' + settings.host + ':' + settings.port + '/confirm-password-reset?access_token=' + info.accessToken.id + '">this</a> url to reset your password';
+    }
     transporter.sendMail({
       from: process.env.RESET_PASSWORD_EMAIL,
       to: info.user.email,
-      subject: 'Reset your password',
+      subject: 'Password Reset Link',
       html: html
     }, function (err, success) {
       if (err)
