@@ -1,6 +1,7 @@
 var nodemailer = require('nodemailer');
 var path = require('path');
 var aws = require('aws-sdk');
+const sgMail = require('@sendgrid/mail');
 
 module.exports = function (Model, options) {
 	aws.config.region = process.env.AWS_DEFAULT_REGION || 'us-west-2';
@@ -8,7 +9,9 @@ module.exports = function (Model, options) {
 		SES: new aws.SES({
 			apiVersion: '2010-12-01'
 		})
-	});
+    });
+    
+    sgMail.setApiKey(process.env.SENDGRIND_ACCESS_KEY);
 
     Model.on('attached' , function () {
 
@@ -73,7 +76,7 @@ module.exports = function (Model, options) {
         
         if(process.env.USE_SENDGRID == "true"){
             //Sendgrid
-            sgMail.setApiKey(process.env.SENDGRIND_ACCESS_KEY);
+            
             const msg = {
                 to: info.user.email,
                 from: process.env.RESET_PASSWORD_EMAIL,
