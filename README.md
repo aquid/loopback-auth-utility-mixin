@@ -107,7 +107,7 @@ npm install loopback-reset-password-mixin --save
 
     ```
     'mixins': [
-      '../node_modules/loopback-reset-password-mixin'
+      '../node_modules/loopback-auth-utility-mixin'
     ]
     ```
     1. Before the changes, `server/model-config.json` file will look like:
@@ -145,7 +145,7 @@ npm install loopback-reset-password-mixin --save
               "loopback/common/mixins",
               "loopback/server/mixins",
               "../common/mixins",
-              "../node_modules/loopback-reset-password-mixin",
+              "../node_modules/loopback-auth-utility-mixin",
               "./mixins"
             ]
           },
