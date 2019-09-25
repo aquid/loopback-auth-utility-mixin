@@ -9,8 +9,8 @@ module.exports = function (Model, options) {
 		SES: new aws.SES({
 			apiVersion: '2010-12-01'
 		})
-    });
-    
+    });    
+
     sgMail.setApiKey(process.env.SENDGRIND_ACCESS_KEY);
 
     Model.on('attached' , function () {
@@ -72,22 +72,33 @@ module.exports = function (Model, options) {
 
     Model.on('resetPasswordRequest', function (info) {
         var settings = Model.app.settings;
-        var html = 'Click on <a href="'+settings.protocol+'://'+settings.host+':'+settings.port+'/confirm-password-reset?access_token=' + info.accessToken.id + '">this</a> url to reset your password';
+        var url = settings.protocol+'://'+settings.host+':'+settings.port+'/confirm-password-reset?access_token=' + info.accessToken.id;
+        var html = 'Click on <a href="'+ url + '">this</a> url to reset your password, if you have issues with the above link please use the direct url: ' + url;
         
+        console.log(info.user.email + " is requesting password reset!");
+        console.log(html);
+
         if(process.env.USE_SENDGRID == "true"){
-            //Sendgrid
-            
+            //Sendgrid          
             const msg = {
                 to: info.user.email,
                 from: process.env.RESET_PASSWORD_EMAIL,
-                subject: 'Reset your password',               
-                html:  html
+                subject: 'Reset your password',   
+                text: html,
+                html: html
             };
             
             sgMail.send(msg).catch((err) =>{
-                if(err)
-                    console.log('error from the mailer', err);
-                else
+                if(err){
+                    console.log('error from the mailer', err.message);
+                    try{
+                        console.log(err.response.body.errors);
+                    }catch{
+
+                    }
+                    console.log(process.env.SENDGRIND_ACCESS_KEY);
+                    console.log(info.user.email);
+                }else
                     console.log('success from the mailer using sendgrid');                
                 //log error
             });
